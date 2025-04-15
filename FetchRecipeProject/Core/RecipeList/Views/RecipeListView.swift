@@ -10,13 +10,14 @@ import SwiftUI
 struct RecipeListView: View {
     
     let recipes: [Recipe]
+    let onRecipePressed: (Recipe) -> Void
     
     var body: some View {
         ScrollView {
-            LazyVStack {
+            LazyVStack(spacing: 10) {
                 ForEach(recipes, id:\.uuid) { recipe in
                     Button {
-                        // To do
+                        onRecipePressed(recipe)
                     } label: {
                         RecipeCellViewBuilder(recipe: recipe)
                             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -24,6 +25,7 @@ struct RecipeListView: View {
                     .buttonStyle(PressableButtonStyle())
                 }
             }
+            .padding()
         }
     }
 }
@@ -37,6 +39,6 @@ struct PressableButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    RecipeListView(recipes: Recipe.mocks)
+    RecipeListView(recipes: Recipe.mocks, onRecipePressed: { _ in })
         .padding()
 }

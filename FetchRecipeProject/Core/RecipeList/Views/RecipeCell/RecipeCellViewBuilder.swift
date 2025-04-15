@@ -15,12 +15,12 @@ struct RecipeCellViewBuilder: View {
         RecipeCellView(
             cuisine: recipe.cuisine,
             name: recipe.name,
-            photoURLString: recipe.photoURLSmall ?? "",
-            sourceURLString: recipe.sourceURL ?? ""
+            photoURLString: recipe.photoURLSmall ?? ""
         )
     }
 }
 
 #Preview {
     RecipeCellViewBuilder(recipe: Recipe.mock)
+        .padding()
 }

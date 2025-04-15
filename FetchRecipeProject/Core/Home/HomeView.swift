@@ -8,14 +8,9 @@
 import SwiftUI
 
 struct HomeView: View {
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-                RecipeListView(recipes: Recipe.mocks)
-                    .padding()
-            }
-            .navigationTitle("Fetch Recipe")
-        }
+        RecipeView()
     }
 }
 

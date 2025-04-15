@@ -14,7 +14,6 @@ struct RecipeCellView: View {
     let cuisine: String
     let name: String
     let photoURLString: String
-    let sourceURLString: String
     
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
@@ -25,8 +24,6 @@ struct RecipeCellView: View {
                     recipeCuisineView(cuisine: cuisine)
                     
                     recipeNameView(name: name)
-                    
-                    recipeSourceView(urlString: sourceURLString)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -34,8 +31,11 @@ struct RecipeCellView: View {
             chevronRightImage
         }
         .padding()
-        .background(colorScheme == .dark ? Color(uiColor: .secondarySystemBackground) : Color(uiColor: .secondarySystemBackground))
-        .mask(RoundedRectangle(cornerRadius: 10))
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 5, y: 5)
     }
     
     @ViewBuilder
@@ -65,15 +65,8 @@ struct RecipeCellView: View {
         Text(name)
             .foregroundStyle(.primary)
             .font(.headline)
-    }
-    
-    @ViewBuilder
-    private func recipeSourceView(urlString: String) -> some View {
-        if let url = URL(string: urlString) {
-            Link("View Recipe", destination: url)
-                .foregroundColor(.blue)
-                .font(.caption2)
-        }
+            .lineLimit(1...2)
+            .minimumScaleFactor(0.8)
     }
     
     private var chevronRightImage: some View {
@@ -88,16 +81,14 @@ struct RecipeCellView: View {
     RecipeCellView(
         cuisine: "Malaysian",
         name: "Apam Balik",
-        photoURLString: "https://d3jbb8n5wk0qxi.cloudfront.net/photos/b9ab0071-b281-4bee-b361-ec340d405320/small.jpg",
-        sourceURLString: "https://www.nyonyacooking.com/recipes/apam-balik~SJ5WuvsDf9WQ"
+        photoURLString: "https://d3jbb8n5wk0qxi.cloudfront.net/photos/b9ab0071-b281-4bee-b361-ec340d405320/small.jpg"
     )
     .padding()
     
     RecipeCellView(
         cuisine: "British",
         name: "Apple & Blackberry Crumble",
-        photoURLString: "",
-        sourceURLString: ""
+        photoURLString: ""
     )
     .padding()
 }
