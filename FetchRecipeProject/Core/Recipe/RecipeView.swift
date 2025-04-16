@@ -9,24 +9,29 @@ import SwiftUI
 
 struct RecipeView: View {
     
-    @State private var selectedRecipe: Recipe?
+    @StateObject var viewModel: RecipeViewModel
     
     var body: some View {
         NavigationStack {
             VStack {
-                RecipeListView(recipes: Recipe.mocks, onRecipePressed: { recipe in
-                    selectedRecipe = recipe
+                RecipeListView(recipes: viewModel.recipes, onRecipePressed: { recipe in
+                    viewModel.selectedRecipe = recipe
                 })
             }
             .navigationTitle("Fetch Recipe")
-            .navigationDestination(item: $selectedRecipe) { recipe in
+            .navigationDestination(item: $viewModel.selectedRecipe) { recipe in
                 RecipeDetailViewBuilder(recipe: recipe)
             }
+        }
+        .onAppear {
+            viewModel.onAppear()
         }
     }
     
 }
 
 #Preview {
-    RecipeView()
+    RecipeView(
+        viewModel: RecipeViewModel(recipeManager: DevPreview.shared.recipeManager)
+    )
 }
