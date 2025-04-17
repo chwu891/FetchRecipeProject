@@ -19,8 +19,10 @@ struct RecipeView: View {
                 })
             }
             .navigationTitle("Fetch Recipe")
-            .navigationDestination(item: $viewModel.selectedRecipe) { recipe in
-                RecipeDetailViewBuilder(recipe: recipe)
+            .navigationDestination(isPresented: Binding(ifNotNil: $viewModel.selectedRecipe)) {
+                if let selectedRecipe = viewModel.selectedRecipe {
+                    RecipeDetailView(recipe: selectedRecipe)
+                }
             }
         }
         .onAppear {

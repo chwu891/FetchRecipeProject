@@ -7,39 +7,42 @@
 
 import SwiftUI
 
+import SwiftUI
+
+@MainActor
+class RecipeDetailViewModel: ObservableObject {
+    
+}
+
 struct RecipeDetailView: View {
     
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     
-    let cuisine: String
-    let name: String
-    let photoURLString: String
-    let sourceURLString: String
-    let youtubeURLString: String
+    let recipe: Recipe
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                recipePhotoView(photoURLString: photoURLString)
+                recipePhotoView(photoURLString: recipe.photoURLLarge)
                     .overlay(alignment: .bottomLeading, content: {
                         VStack(spacing: 0) {
-                            recipeCuisineView(cuisine: cuisine)
-                            recipeNameView(name: name)
+                            recipeCuisineView(cuisine: recipe.cuisine)
+                            recipeNameView(name: recipe.name)
                         }
                     })
                 
-                recipeSourceView(urlString: sourceURLString)
+                recipeSourceView(sourceURLString: recipe.sourceURL)
                 
                 Divider()
                 
-                recipeVideoView(youtubeURLString: youtubeURLString)
+                recipeVideoView(youtubeURLString: recipe.youtubeURL)
                 
                 Spacer()
             }
         }
         .ignoresSafeArea()
-        .toolbarVisibility(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         .background(Color(uiColor: .secondarySystemBackground))
         .overlay(alignment: .topLeading, content: {
             backButton
@@ -48,7 +51,7 @@ struct RecipeDetailView: View {
     
     private var backButton: some View {
         Button {
-            onBackButtonPressed()
+            dismiss()
         } label: {
             Image(systemName: "arrow.left")
                 .resizable()
@@ -61,9 +64,10 @@ struct RecipeDetailView: View {
     }
     
     @ViewBuilder
-    private func recipePhotoView(photoURLString: String) -> some View {
+    private func recipePhotoView(photoURLString: String?) -> some View {
         Group {
-            if let url = URL(string: photoURLString) {
+            if let urlString = photoURLString,
+               let url = URL(string: urlString) {
                 ImageLoaderView(url: url)
             } else {
                 Image(systemName: "photo")
@@ -105,31 +109,52 @@ struct RecipeDetailView: View {
     }
     
     @ViewBuilder
-    private func recipeSourceView(urlString: String) -> some View {
-        if let url = URL(string: urlString) {
+    private func recipeSourceView(sourceURLString: String?) -> some View {
+        if let urlString = sourceURLString,
+           let url = URL(string: urlString) {
             Link("View Full Recipe", destination: url)
                 .foregroundColor(.blue)
                 .font(.headline)
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
         }
     }
     
     @ViewBuilder
-    private func recipeVideoView(youtubeURLString: String) -> some View {
-        if let videoID = extractYouTubeID(from: youtubeURLString) {
+    private func recipeVideoView(youtubeURLString: String?) -> some View {
+        if let urlString = youtubeURLString,
+           let videoID = extractYouTubeID(from: urlString),
+           let thumbnailURL = URL(string: "https://img.youtube.com/vi/\(videoID)/hqdefault.jpg"),
+           let videoURL = URL(string: "https://www.youtube.com/watch?v=\(videoID)") {
+            
+            let horizontalPadding: CGFloat = 20
+            let fullWidth = UIScreen.main.bounds.width
+            let imageWidth = fullWidth - (horizontalPadding * 2)
+            let imageHeight = imageWidth * 9 / 16
+            
             VStack {
                 Text("Watch Recipe Video:")
                     .foregroundStyle(.primary)
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                YouTubePlayerView(videoID: videoID)
-                    .frame(height: UIScreen.main.bounds.width * 0.7)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                Link(destination: videoURL) {
+                    ZStack {
+                        ImageLoaderView(url: thumbnailURL)
+                            .frame(width: imageWidth, height: imageHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        
+                        Image(systemName: "play.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.white)
+                            .shadow(radius: 4)
+                    }
+                }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, horizontalPadding)
         }
     }
     
@@ -141,20 +166,10 @@ struct RecipeDetailView: View {
         }
         return nil
     }
-    
-    func onBackButtonPressed() {
-        dismiss()
-    }
 }
 
 #Preview {
     NavigationStack {
-        RecipeDetailView(
-            cuisine: "Malaysian",
-            name: "Apam Balik",
-            photoURLString: "https://d3jbb8n5wk0qxi.cloudfront.net/photos/b9ab0071-b281-4bee-b361-ec340d405320/large.jpg",
-            sourceURLString: "https://www.nyonyacooking.com/recipes/apam-balik~SJ5WuvsDf9WQ",
-            youtubeURLString: "https://www.youtube.com/watch?v=6R8ffRRJcrg"
-        )
+        RecipeDetailView(recipe: Recipe.mock)
     }
 }
