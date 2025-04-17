@@ -19,21 +19,20 @@ final class NetworkClient {
         endpoint: String,
         queryItems: [URLQueryItem] = []
     ) async throws -> T {
-        let url = try buildURL(endpoint: endpoint, queryItems: queryItems)
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        
         do {
+            let url = try buildURL(endpoint: endpoint, queryItems: queryItems)
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            
+            let (data, _) = try await URLSession.shared.data(for: request)
+            
             let decoder = JSONDecoder()
             return try decoder.decode(T.self, from: data)
-        } catch let error as DecodingError {
-            printDecodingError(error)
-            throw error
+        } catch let decodingError as DecodingError {
+            throw ServiceError.decoding(decodingError)
         } catch {
-            throw error
+            throw ServiceError.network(error)
         }
     }
     
@@ -42,23 +41,8 @@ final class NetworkClient {
         components?.queryItems = queryItems
         
         guard let url = components?.url else {
-            throw URLError(.badURL)
+            throw ServiceError.network(URLError(.badURL))
         }
         return url
-    }
-    
-    private func printDecodingError(_ error: DecodingError) {
-        switch error {
-        case .keyNotFound(let key, let context):
-            print("❌ Key '\(key.stringValue)' not found – \(context.debugDescription)")
-        case .typeMismatch(let type, let context):
-            print("❌ Type mismatch – Expected \(type) – \(context.debugDescription)")
-        case .valueNotFound(let value, let context):
-            print("❌ Value '\(value)' not found – \(context.debugDescription)")
-        case .dataCorrupted(let context):
-            print("❌ Data corrupted – \(context.debugDescription)")
-        @unknown default:
-            print("❌ Unknown decoding error.")
-        }
     }
 }
