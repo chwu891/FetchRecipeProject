@@ -131,7 +131,6 @@ struct RecipeDetailView: View {
             let horizontalPadding: CGFloat = 20
             let fullWidth = UIScreen.main.bounds.width
             let imageWidth = fullWidth - (horizontalPadding * 2)
-            let imageHeight = imageWidth * 9 / 16
             
             VStack {
                 Text("Watch Recipe Video:")
@@ -142,7 +141,7 @@ struct RecipeDetailView: View {
                 Link(destination: videoURL) {
                     ZStack {
                         ImageLoaderView(url: thumbnailURL)
-                            .frame(width: imageWidth, height: imageHeight)
+                            .frame(width: imageWidth)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                         
                         Image(systemName: "play.circle.fill")

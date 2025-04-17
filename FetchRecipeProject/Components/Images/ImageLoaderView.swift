@@ -7,27 +7,60 @@
 
 import SwiftUI
 
-struct ImageLoaderView: View {
+@MainActor
+class ImageLoaderViewModel: ObservableObject {
     
-    let url: URL
+    @Published var image: UIImage?
     
-    var body: some View {
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .empty:
-                ProgressView()
-            case .success(let image):
-                image
-                    .resizable()
-                    .aspectRatio(1, contentMode: .fill)
-            case .failure:
-                Image(systemName: "photo")
-                    .resizable()
-                    .aspectRatio(1, contentMode: .fill)
-            @unknown default:
-                EmptyView()
+    private var url: URL
+    
+    init(url: URL) {
+        self.url = url
+    }
+    
+    func loadImage() {
+        let key = url.absoluteString
+        
+        if let cached = ImageCache.shared.image(forKey: key) {
+            self.image = cached
+            return
+        }
+        
+        Task {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                if let image = UIImage(data: data) {
+                    ImageCache.shared.store(image, forKey: key)
+                    self.image = image
+                }
+            } catch {
+                print("Failed to load image:", error)
             }
         }
+    }
+}
+
+struct ImageLoaderView: View {
+    
+    @StateObject private var viewModel: ImageLoaderViewModel
+    let url: URL
+    
+    init(url: URL) {
+        self.url = url
+        _viewModel = StateObject(wrappedValue: ImageLoaderViewModel(url: url))
+    }
+    
+    var body: some View {
+        Group {
+            if let image = viewModel.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                ProgressView()
+            }
+        }
+        .onAppear { viewModel.loadImage() }
     }
 }
 
