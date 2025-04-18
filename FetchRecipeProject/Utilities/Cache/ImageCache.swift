@@ -45,3 +45,18 @@ final class ImageCache {
         }
     }
 }
+
+extension ImageCache {
+    func clearMemoryCache(forKey key: String) {
+        memoryCache.removeObject(forKey: key as NSString)
+    }
+    
+    func clearDiskCache(forKey key: String) {
+        let fileURL = diskCacheURL.appendingPathComponent(key)
+        try? FileManager.default.removeItem(at: fileURL)
+    }
+    
+    func fileURL(forKey key: String) -> URL {
+        return diskCacheURL.appendingPathComponent(key)
+    }
+}
